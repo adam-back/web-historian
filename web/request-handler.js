@@ -9,8 +9,7 @@ exports.handleRequest = function (req, res) {
       // serve static index.html
       httpHelpers.serveAssets('index.html')
         .then(function(asset) {
-          res.writeHead(200, 'text/html');
-          res.end(asset);
+          sendResponse(res, 200, 'text/html', asset);
         })
         .catch(function(error) {
           console.log("Error serving index.html:", error);
@@ -18,8 +17,7 @@ exports.handleRequest = function (req, res) {
     } else if ( req.url === '/styles.css' ) {
       httpHelpers.serveAssets( 'styles.css' ) 
         .then(function(stylesheet) {
-          res.writeHead(200, 'text/css');
-          res.end(stylesheet);
+          sendResponse(res, 200, 'text/css', stylesheet);
         })
         .catch(function(error) {
           console.log("Error serving css", error);
@@ -28,4 +26,9 @@ exports.handleRequest = function (req, res) {
   } else if( req.method === 'POST' ) {
 
   }
+};
+
+var sendResponse = function(res, code, contentType, data) {
+  res.writeHead(code, contentType);
+  res.end(data);
 };
