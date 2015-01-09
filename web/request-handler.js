@@ -24,7 +24,14 @@ exports.handleRequest = function (req, res) {
         });
     }
   } else if( req.method === 'POST' ) {
-
+    // check if website entered has been saved
+      // if it has
+        // serve the archived website
+      // otherwise
+        // serve the loading page
+        // see if it has been added to site.txt
+          // if it hasn't
+            // add it to sites.txt to be archived by the next cronjob
   }
 };
 
