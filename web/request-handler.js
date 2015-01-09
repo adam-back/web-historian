@@ -1,6 +1,7 @@
 var path = require('path');
 var archive = require('../helpers/archive-helpers');
 var httpHelpers = require('./http-helpers');
+var url = require('url');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
@@ -18,13 +19,34 @@ exports.handleRequest = function (req, res) {
       httpHelpers.serveAssets( 'styles.css' ) 
         .then(function(stylesheet) {
           sendResponse(res, 200, 'text/css', stylesheet);
+          archive.readListOfUrls();
         })
         .catch(function(error) {
           console.log("Error serving css", error);
         });
     }
   } else if( req.method === 'POST' ) {
+    var requestedUrl;
+    var data = '';
+    // determine what the URL entered was
+    req.on('data', function(chunk) {
+      data += chunk;
+
+      // safeguard against giant or infinite files
+      if( data.length > 16 ) {
+        req.connection.destroy();
+      }
+    });
+
+    // when the form is done being received
+    req.on('end', function() {
+      // get the url from url=www.somewebsite.com
+      requestedUrl = data.substr(4);
+      console.log(requestedUrl);
+      req.connection.destroy();
+    })
     // check if website entered has been saved
+    // archive.isUrlInList()
       // if it has
         // serve the archived website
       // otherwise
