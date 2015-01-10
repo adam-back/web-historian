@@ -42,18 +42,29 @@ exports.handleRequest = function (req, res) {
     req.on('end', function() {
       // get the url from url=www.somewebsite.com
       requestedUrl = data.substr(4);
-      console.log(requestedUrl);
-      req.connection.destroy();
-    })
-    // check if website entered has been saved
-    // archive.isUrlInList()
-      // if it has
-        // serve the archived website
-      // otherwise
-        // serve the loading page
-        // see if it has been added to site.txt
-          // if it hasn't
+      // check if website entered has been saved
+      archive.isUrlInList(requestedUrl)
+        .then(function( urlInList ) {
+          // if it has been added to sites.txt
+          if( urlInList === true ) {
+            // check to see if it's been archived yet
+            archive.isUrlA
+              // if it has been archived
+                // serve the archived website
+              // else
+                // serve the loading page
+          // otherwise, not in sites.txt yet
+          } else {
+            // serve the loading page
             // add it to sites.txt to be archived by the next cronjob
+          }
+        })
+        .catch(function(error) {
+          console.error('Error checking sites.txt for URL:', error);
+        });
+        console.log(requestedUrl);
+        req.connection.destroy();
+    })
   }
 };
 

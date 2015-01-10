@@ -59,8 +59,17 @@ exports.isUrlInList = function(target){
 exports.addUrlToList = function(){
 };
 
-exports.isURLArchived = function(){
+exports.isUrlArchived = function(target){
+  // search /sites for url 
+    // if successful
+      // readArchivedUrl
+    // if not
+      // return false
 };
+
+exports.readArchivedUrl = function(target){
+
+}
 
 exports.downloadUrls = function(){
 };
