@@ -34,7 +34,7 @@ exports.isUrlInList = function(){
 exports.addUrlToList = function(){
 };
 
-exports.isURLArchived = function(){
+exports.isUrlArchived = function(){
 };
 
 exports.downloadUrls = function(){
