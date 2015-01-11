@@ -40,10 +40,10 @@ exports.readListOfUrls = function(){
 
 exports.isUrlInList = function(target){
   var deferred = Q.defer();
-
   this.readListOfUrls()
     .then(function(list) {
-      if( list.search(target) !== null ) {
+      console.log('what is list', list  );
+      if( list.search(target) !== -1 ) {
         deferred.resolve(true);
       } else {
         deferred.resolve(false);
@@ -57,6 +57,19 @@ exports.isUrlInList = function(target){
 };
 
 exports.addUrlToList = function(url){
+  var deferred = Q.defer();
+  url = url + '\n';
+  console.log('called', url);
+  // append URL and newline to sites.txt
+  fs.appendFile(this.paths.list, url, function(error) {
+    if(error) {
+      deferred.reject(error);
+    } else {
+      deferred.resolve('Successfully added URL to list');
+    }
+  })
+
+  return deferred.promise;
 };
 
 exports.isUrlArchived = function(target){
