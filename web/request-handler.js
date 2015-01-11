@@ -24,6 +24,28 @@ exports.handleRequest = function (req, res) {
         .catch(function(error) {
           console.error("Error serving css", error);
         });
+    } else {
+      // check if GET request is looking for archived site
+      // parse the request path, then remove the leading forward-slash
+      // http://localhost:8080/www.google.com -> www.google.com
+      var parsedUrl = url.parse(req.url).path.substr(1);
+        // if it is listed in sites.txt
+        if( archive.isUrlInList(parsedUrl) === true) {
+          // return archived site
+          if( archive.isUrlArchived(parsedUrl) === true) {
+            archivedSite.readArchivedUrl(parsedUrl)
+              .then(function(archivedSite) {
+                sendResponse(302, archivedSite);
+              }) 
+              .catch(function(error) {
+                console.log('Error serving archived site', error);
+              });
+          } else {
+            serveLoadingPage(res);
+          }
+        } else {
+          sendResponse(res, 404, null, null);
+        }
     }
   } else if( req.method === 'POST' ) {
     var requestedUrl;
@@ -31,11 +53,6 @@ exports.handleRequest = function (req, res) {
     // determine what the URL entered was
     req.on('data', function(chunk) {
       data += chunk;
-
-      // safeguard against giant or infinite files
-      if( data.length > 16 ) {
-        req.connection.destroy();
-      }
     });
 
     // when the form is done being received
@@ -63,7 +80,7 @@ exports.handleRequest = function (req, res) {
                   // site hasn't been archived, but is added to sites.txt
                 } else {
                   // serve the loading page
-                  serveLoadingPage();
+                  serveLoadingPage(res);
                 }      
               })
               .catch(function(error) {
@@ -72,7 +89,7 @@ exports.handleRequest = function (req, res) {
           // otherwise, not in sites.txt yet
           } else {
             // serve the loading page
-            serveLoadingPage();
+            serveLoadingPage(res);
             // add it to sites.txt to be archived by the next cronjob
             archive.addUrlToList(requestedUrl)
               .then(function(success) {
@@ -86,8 +103,6 @@ exports.handleRequest = function (req, res) {
         .catch(function(error) {
           console.error('Error checking sites.txt for URL:', error);
         });
-        console.log(requestedUrl);
-        req.connection.destroy();
     })
   }
 };
@@ -97,10 +112,10 @@ var sendResponse = function(res, code, contentType, data) {
   res.end(data);
 };
 
-var serveLoadingPage = function() {
+var serveLoadingPage = function(res) {
   httpHelpers.serveAssets('loading.html')
     .then(function(asset) {
-      sendResponse(res, 200, 'text/html', asset);
+      sendResponse(res, 302, 'text/html', asset);
     })
     .catch(function(error) {
       console.error("Error serving loading.html:", error);
