@@ -62,7 +62,6 @@ exports.handleRequest = function (req, res) {
       // check if website entered has been saved
       archive.isUrlInList(requestedUrl)
         .then(function( urlInList ) {
-          console.log('boolean?', urlInList );
           // if it has been added to sites.txt
           if( urlInList === true ) {
             // check to see if it's been archived yet

@@ -3,6 +3,7 @@ var path = require('path');
 var _ = require('underscore');
 var Q = require('q');
 
+
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
  * Consider using the `paths` object below to store frequently used file paths. This way,
@@ -40,9 +41,9 @@ exports.readListOfUrls = function(){
 
 exports.isUrlInList = function(target){
   var deferred = Q.defer();
+  
   this.readListOfUrls()
     .then(function(list) {
-      console.log('what is list', list  );
       if( list.search(target) !== -1 ) {
         deferred.resolve(true);
       } else {
@@ -50,7 +51,7 @@ exports.isUrlInList = function(target){
       }
     })
     .catch(function(error) {
-      console.log('Error reading list of URLS', error);
+        deferred.reject(error);
     });
 
   return deferred.promise;
@@ -59,7 +60,6 @@ exports.isUrlInList = function(target){
 exports.addUrlToList = function(url){
   var deferred = Q.defer();
   url = url + '\n';
-  console.log('called', url);
   // append URL and newline to sites.txt
   fs.appendFile(this.paths.list, url, function(error) {
     if(error) {
@@ -112,4 +112,30 @@ exports.readArchivedUrl = function(target){
 };
 
 exports.downloadUrls = function(){
+  // read list of urls
+  this.readListOfUrls()
+    .then(function(data) {
+      // create an array of the urls
+      var urls = data.split('\n');
+      console.log('urls', urls);
+      // loop through list
+      for (var i = 0; i < urls.length; i++) {
+        // download URL
+        // probably won't work because loop will get to the end by the time the async occurs
+        this.isUrlArchived(urls[i])
+          .then(function(bool) {
+            if(bool === false) {
+              this.archiveUrl(urls[i]); 
+            }
+          })
+          .catch(function(error) {
+            console.error('Error checking if Url is archived:', error);
+          });
+      };
+    })
+    .catch(function(error) {
+      console.error("Error reading Urls:", error);
+    });
 };
+
+
