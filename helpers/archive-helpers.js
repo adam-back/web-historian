@@ -56,20 +56,47 @@ exports.isUrlInList = function(target){
   return deferred.promise;
 };
 
-exports.addUrlToList = function(){
+exports.addUrlToList = function(url){
 };
 
 exports.isUrlArchived = function(target){
-  // search /sites for url 
-    // if successful
-      // readArchivedUrl
-    // if not
-      // return false
+  var deferred = Q.defer();
+
+  // search /sites for url
+  fs.readdir(this.paths.archivedSites, function(error, files) {
+    // files is an array of files in the directory
+    if(error) {
+      deferred.reject(error);
+    } else {
+      // look to see if url is already a file, meaning it is archived
+      for (var i = 0; i < files.length; i++) {
+        if(files[i] === target) {
+          deferred.resolve(true);
+          break;
+        }
+      };
+
+      // if the file is not found,
+      deferred.resolve(false);
+    }
+  }); 
+
+  return deferred.promise;
 };
 
 exports.readArchivedUrl = function(target){
+  var deferred = Q.defer();
 
-}
+  fs.readFile(this.paths.archivedSites + '/' + target, 'utf-8', function(error, data) {
+    if(error) {
+      deferred.reject(error);
+    } else {
+      deferred.resolve(data);
+    }
+  });
+
+  return deferred.promise;
+};
 
 exports.downloadUrls = function(){
 };

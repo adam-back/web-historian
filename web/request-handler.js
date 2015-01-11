@@ -13,7 +13,7 @@ exports.handleRequest = function (req, res) {
           sendResponse(res, 200, 'text/html', asset);
         })
         .catch(function(error) {
-          console.log("Error serving index.html:", error);
+          console.error("Error serving index.html:", error);
         });
     } else if ( req.url === '/styles.css' ) {
       httpHelpers.serveAssets( 'styles.css' ) 
@@ -22,7 +22,7 @@ exports.handleRequest = function (req, res) {
           archive.readListOfUrls();
         })
         .catch(function(error) {
-          console.log("Error serving css", error);
+          console.error("Error serving css", error);
         });
     }
   } else if( req.method === 'POST' ) {
@@ -48,15 +48,39 @@ exports.handleRequest = function (req, res) {
           // if it has been added to sites.txt
           if( urlInList === true ) {
             // check to see if it's been archived yet
-            archive.isUrlA
-              // if it has been archived
-                // serve the archived website
-              // else
-                // serve the loading page
+            archive.isUrlArchived(url)
+              .then(function(bool) {
+                // if it has been archived
+                if(bool === true) {
+                  // serve the archived website
+                  archive.readArchivedUrl(requestedUrl)
+                    .then(function(archivedSite) {
+                      sendResponse(res, 200, 'text/html', archivedSite);
+                    })
+                    .catch(function(error) {
+                      console.log('Error server archived site', error);
+                    });
+                  // site hasn't been archived, but is added to sites.txt
+                } else {
+                  // serve the loading page
+                  serveLoadingPage();
+                }      
+              })
+              .catch(function(error) {
+                console.error('Error checking if URL is archived', error);
+              });
           // otherwise, not in sites.txt yet
           } else {
             // serve the loading page
+            serveLoadingPage();
             // add it to sites.txt to be archived by the next cronjob
+            archive.addUrlToList(requestedUrl)
+              .then(function(success) {
+                console.log('The URL has been successfully added to sites.txt', success);
+              })
+              .catch(function(error) {
+                console.error('Error adding URL to sites.txt for URL:', error);
+              });
           }
         })
         .catch(function(error) {
@@ -71,4 +95,14 @@ exports.handleRequest = function (req, res) {
 var sendResponse = function(res, code, contentType, data) {
   res.writeHead(code, contentType);
   res.end(data);
+};
+
+var serveLoadingPage = function() {
+  httpHelpers.serveAssets('loading.html')
+    .then(function(asset) {
+      sendResponse(res, 200, 'text/html', asset);
+    })
+    .catch(function(error) {
+      console.error("Error serving loading.html:", error);
+    });
 };
