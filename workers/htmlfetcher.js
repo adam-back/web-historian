@@ -1,4 +1,26 @@
 // eventually, you'll have some code here that uses the code in `archive-helpers.js`
 // to actually download the urls you want to download.
+var archiveHelpers = require('../helpers/archive-helpers');
+var fs = require('fs');
 
+archiveHelpers.downloadUrls()
+  .then(function(numberOfDownloads) {
+    var date = new Date();
+    var logMessage = date + ": " + numberOfDownloads + " downloads" + "\n";
+    // log that download occurred
+    fs.appendFile('cronlog.txt', logMessage, function(error) {
+      if(error) {
+        console.error('Error writing to cronlog: ', error);
+      }
+    });
+  })
+  .catch(function(error) {
+    var date = new Date();
+    var logMessage = date + ": " + error;
+    fs.appendFile('cronlog.txt', logMessage, function(writeError) {
+      if(writeError) {
+        console.error('Error writing to cronlog: ', writeError);
+      }
+    });
+  });
 
