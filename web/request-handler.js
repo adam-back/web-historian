@@ -29,23 +29,39 @@ exports.handleRequest = function (req, res) {
       // parse the request path, then remove the leading forward-slash
       // http://localhost:8080/www.google.com -> www.google.com
       var parsedUrl = url.parse(req.url).path.substr(1);
-        // if it is listed in sites.txt
-        if( archive.isUrlInList(parsedUrl) === true) {
-          // return archived site
-          if( archive.isUrlArchived(parsedUrl) === true) {
-            archivedSite.readArchivedUrl(parsedUrl)
-              .then(function(archivedSite) {
-                sendResponse(302, archivedSite);
-              }) 
+      archive.isUrlInList(parsedUrl)
+        .then(function(urlInList) {
+          // if it is listed in sites.txt
+          if( urlInList === true) {
+            console.log('Listed in sites.txt...');
+            // check if it's archived yet
+            archive.isUrlArchived(parsedUrl)
+              .then(function(archived) {
+                if( archived === true ) {
+                  console.log('and is archived.');
+                  archive.readArchivedUrl(parsedUrl)
+                    .then(function(archivedSite) {
+                      console.log('Responding with archived site...');
+                      sendResponse(res, 200, 'text/html', archivedSite);
+                    }) 
+                    .catch(function(error) {
+                      serverError(res, error);
+                    });
+                } else {
+                  console.log('but is not yet archived.');
+                  serveLoadingPage(res);
+                }
+              })
               .catch(function(error) {
-                console.log('Error serving archived site', error);
-              });
+                console.error(error);
+              })
           } else {
-            serveLoadingPage(res);
-          }
-        } else {
-          sendResponse(res, 404, null, null);
-        }
+            sendResponse(res, 404, null, null);
+          } 
+        })
+        .catch(function(error) {
+          console.error(error);
+        });
     }
   } else if( req.method === 'POST' ) {
     var requestedUrl;
@@ -75,7 +91,7 @@ exports.handleRequest = function (req, res) {
                       sendResponse(res, 200, 'text/html', archivedSite);
                     })
                     .catch(function(error) {
-                      console.log('Error server archived site', error);
+                      serverError(res, error);
                     });
                   // site hasn't been archived, but is added to sites.txt
                 } else {
@@ -110,6 +126,11 @@ exports.handleRequest = function (req, res) {
 var sendResponse = function(res, code, contentType, data) {
   res.writeHead(code, contentType);
   res.end(data);
+};
+
+var serverError = function(res, error) {
+  res.writeHead(500, 'text/plain');
+  res.end(error);
 };
 
 var serveLoadingPage = function(res) {
