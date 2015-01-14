@@ -11,6 +11,8 @@ archiveHelpers.downloadUrls()
     fs.appendFile('cronlog.txt', logMessage, function(writeError) {
       if(writeError) {
         console.error('Error writing to cronlog: ', writeError);
+      } else {
+        console.log('Successfully downloaded URLs. Check cronlog.txt for a summary.');
       }
     });
   })
