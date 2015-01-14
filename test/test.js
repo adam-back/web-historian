@@ -6,9 +6,9 @@ var archive = require("../helpers/archive-helpers");
 var path = require('path');
 var res;
 
-archive.initialize({
-  list : path.join(__dirname, "/testdata/sites.txt")
-});
+// archive.initialize({
+//   list : path.join(__dirname, "/testdata/sites.txt")
+// });
 
 // Conditional async testing, akin to Jasmine's waitsFor()
 var waitForThen = function(test, cb) {
@@ -40,7 +40,6 @@ describe("Node Server Request Listener Function", function() {
   it("Should answer GET requests for archived websites", function(done) {
     var fixtureName = "www.google.com";
     var fixturePath = archive.paths.archivedSites + "/" + fixtureName;
-
     // Create or clear the file.
     var fd = fs.openSync(fixturePath, "w");
     fs.closeSync(fd);
@@ -105,17 +104,19 @@ describe("html fetcher helpers", function(){
 
   it("should read urls from sites.txt", function(done){
     var urlArray = ["example1.com", "example2.com"];
-    var resultArray;
+    var results;
 
     fs.writeFileSync(archive.paths.list, urlArray.join("\n"));
-    archive.readListOfUrls(function(urls){
-      resultArray = urls;
-    });
+
+    archive.readListOfUrls()
+      .then(function(urls) {
+        results = urls;
+      });
 
     waitForThen(
-      function() { return resultArray; },
+      function() { return results; },
       function(){
-        expect(resultArray).to.deep.equal(urlArray);
+        expect(results).to.deep.equal('example1.com\nexample2.com');
         done();
     });
   });
