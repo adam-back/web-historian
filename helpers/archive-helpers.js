@@ -122,14 +122,22 @@ exports.downloadUrls = function(){
       var urls = data.split('\n');
       console.log('urls', urls);
       // loop through list
+      // probably won't work because loop will get to the end by the time the async occurs
       for (var i = 0; i < urls.length; i++) {
-        // download URL
-        // probably won't work because loop will get to the end by the time the async occurs
+        // check if url is archived
         this.isUrlArchived(urls[i])
           .then(function(bool) {
+            // if it isn't yet
             if(bool === false) {
-              this.archiveUrl(urls[i]); 
-              numberOfDownloads++;
+              // archive it
+              this.archiveUrl(urls[i])
+                .then(function(success) {
+                  console.log('Successfully archived ' + url + '!');
+                  numberOfDownloads++;
+                })
+                .catch(function(error) {
+                  console.error(error);
+                });
             }
           })
           .catch(function(error) {
@@ -147,9 +155,11 @@ exports.downloadUrls = function(){
 };
 
 exports.archiveUrl = function(url) {
+  var deferred = Q.defer();
+
   var options = {
     host: url,
-    path: '/index.html'
+    path: '/'
   };
 
   var data = '';
@@ -163,13 +173,15 @@ exports.archiveUrl = function(url) {
   .on('end', function() {
     fs.writeFile(url, data, function(error) {
       if(error) {
-        console.error('Error archiving url', error);
+        deferred.reject(error);
       } else {
-        console.log('Successfully archived ' + url + '!');
+        deferred.resolve(url);
       }
     });
   })
   .on('error', function(e) {
-    console.log("Got error: " + e.message);
+    deferred.reject(e);
   });
+
+  return deferred.promise;
 };

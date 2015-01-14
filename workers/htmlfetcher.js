@@ -8,9 +8,9 @@ archiveHelpers.downloadUrls()
     var date = new Date();
     var logMessage = date + ": " + numberOfDownloads + " downloads" + "\n";
     // log that download occurred
-    fs.appendFile('cronlog.txt', logMessage, function(error) {
-      if(error) {
-        console.error('Error writing to cronlog: ', error);
+    fs.appendFile('cronlog.txt', logMessage, function(writeError) {
+      if(writeError) {
+        console.error('Error writing to cronlog: ', writeError);
       }
     });
   })
