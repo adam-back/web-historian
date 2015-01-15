@@ -2,27 +2,38 @@
 // to actually download the urls you want to download.
 var archiveHelpers = require('../helpers/archive-helpers');
 var fs = require('fs');
+var Q = require('q');
 
-archiveHelpers.downloadUrls()
-  .then(function(numberOfDownloads) {
-    var date = new Date();
-    var logMessage = date + ": " + numberOfDownloads + " downloads" + "\n";
-    // log that download occurred
-    fs.appendFile('cronlog.txt', logMessage, function(writeError) {
-      if(writeError) {
-        console.error('Error writing to cronlog: ', writeError);
-      } else {
-        console.log('Successfully downloaded URLs. Check cronlog.txt for a summary.');
-      }
+exports.fetch = function() {
+  var deferred = Q.defer();
+
+  archiveHelpers.downloadUrls()
+    .then(function(numberOfDownloads) {
+      var date = new Date();
+      var logMessage = date + ": " + numberOfDownloads + " downloads" + "\n";
+      // log that download occurred
+      fs.appendFile('cronlog.txt', logMessage, function(writeError) {
+        if(writeError) {
+          console.error('Error writing to cronlog: ', writeError);
+        } else {
+          console.log('Successfully downloaded URLs. Check cronlog.txt for a summary.');
+        }
+      });
+    
+      deferred.resolve(logMessage);
+    })
+    .catch(function(error) {
+      var date = new Date();
+      var logMessage = date + ": " + error;
+      fs.appendFile('cronlog.txt', logMessage, function(writeError) {
+        if(writeError) {
+          console.error('Error writing to cronlog: ', writeError);
+        }
+      });
+
+      deferred.reject(error);
     });
-  })
-  .catch(function(error) {
-    var date = new Date();
-    var logMessage = date + ": " + error;
-    fs.appendFile('cronlog.txt', logMessage, function(writeError) {
-      if(writeError) {
-        console.error('Error writing to cronlog: ', writeError);
-      }
-    });
-  });
+  
+  return deferred.promise;
+}
 
