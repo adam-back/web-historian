@@ -7,6 +7,7 @@ var Q = require('q');
 exports.fetch = function() {
   var deferred = Q.defer();
 
+  console.log('message');
   archiveHelpers.downloadUrls()
     .then(function(numberOfDownloads) {
       var date = new Date();
@@ -24,7 +25,7 @@ exports.fetch = function() {
     })
     .catch(function(error) {
       var date = new Date();
-      var logMessage = date + ": " + error;
+      var logMessage = date + ": " + error + "\n";
       fs.appendFile('cronlog.txt', logMessage, function(writeError) {
         if(writeError) {
           console.error('Error writing to cronlog: ', writeError);

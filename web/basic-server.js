@@ -22,13 +22,8 @@ var archiveJob = new CronJob('* * * * *', function() {
     })
     .catch(function(error) {
       console.error(error);
-    })
+    });
 
 })
   .start();
-
-
-server.on('close', function() {
-  archiveJob.stop();
-});
 

@@ -2,6 +2,8 @@ archives/*
 archives/*.txt
 archives
 
+cronlog.txt
+
 ###OSX###
 
 .DS_Store
