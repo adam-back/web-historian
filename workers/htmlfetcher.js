@@ -7,7 +7,6 @@ var Q = require('q');
 exports.fetch = function() {
   var deferred = Q.defer();
 
-  console.log('message');
   archiveHelpers.downloadUrls()
     .then(function(numberOfDownloads) {
       var date = new Date();

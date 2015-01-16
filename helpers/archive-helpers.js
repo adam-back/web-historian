@@ -125,12 +125,12 @@ exports.downloadUrls = function(){
       // probably won't work because loop will get to the end by the time the async occurs
       for (var i = 0; i < urls.length; i++) {
         // check if url is archived
-        this.isUrlArchived(urls[i])
+        exports.isUrlArchived(urls[i])
           .then(function(bool) {
             // if it isn't yet
             if(bool === false) {
               // archive it
-              this.archiveUrl(urls[i])
+              exports.archiveUrl(urls[i])
                 .then(function(success) {
                   console.log('Successfully archived ' + url + '!');
                   numberOfDownloads++;
@@ -157,14 +157,9 @@ exports.downloadUrls = function(){
 exports.archiveUrl = function(url) {
   var deferred = Q.defer();
 
-  var options = {
-    host: url,
-    path: '/'
-  };
-
   var data = '';
 
-  http.get(options, function(res) {
+  http.get(url + '/index.html', function(res) {
     console.log("Got response: " + res.statusCode);
   })
   .on('data', function(chunk) {
