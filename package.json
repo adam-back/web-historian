@@ -7,6 +7,8 @@
   "dependencies": {
     "cron": "^1.0.6",
     "crontab": "^1.0.2",
+    "http-get": "^0.5.10",
+    "http-request": "^0.7.0",
     "q": "^1.1.2"
   },
   "devDependencies": {

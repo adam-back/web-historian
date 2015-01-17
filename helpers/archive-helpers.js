@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var Q = require('q');
-var http = require('http');
+var http = require('http-request');
 
 
 /*
@@ -120,17 +120,15 @@ exports.downloadUrls = function(){
     .then(function(data) {
       // create an array of the urls
       var urls = data.split('\n');
-      console.log('urls', urls);
       // loop through list
-      // probably won't work because loop will get to the end by the time the async occurs
-      for (var i = 0; i < urls.length; i++) {
+      urls.forEach(function(url) {
         // check if url is archived
-        exports.isUrlArchived(urls[i])
+        exports.isUrlArchived(url)
           .then(function(bool) {
             // if it isn't yet
             if(bool === false) {
               // archive it
-              exports.archiveUrl(urls[i])
+              exports.archiveUrl(url)
                 .then(function(success) {
                   console.log('Successfully archived ' + url + '!');
                   numberOfDownloads++;
@@ -141,10 +139,9 @@ exports.downloadUrls = function(){
             }
           })
           .catch(function(error) {
-            console.error('Error checking if Url is archived:', error);
+            console.error('Error checking if URL is archived:', error);
           });
-      };
-
+      });
       deferred.resolve(numberOfDownloads);
     })
     .catch(function(error) {
@@ -157,25 +154,19 @@ exports.downloadUrls = function(){
 exports.archiveUrl = function(url) {
   var deferred = Q.defer();
 
-  var data = '';
-
-  http.get(url + '/index.html', function(res) {
-    console.log("Got response: " + res.statusCode);
-  })
-  .on('data', function(chunk) {
-    data += chunk;
-  })
-  .on('end', function() {
-    fs.writeFile(url, data, function(error) {
-      if(error) {
-        deferred.reject(error);
-      } else {
-        deferred.resolve(url);
+  // save the response to file with a progress callback
+  http.get({
+    url: url + '/index.html',
+    progress: function (current, total) {
+      console.log('downloaded %d bytes from %d', current, total);
+    }}, '../archives/sites/' + url, function (err, res) {
+      if  (err) {
+        console.error(err);
+        deferred.reject(err);
+        return;
       }
-    });
-  })
-  .on('error', function(e) {
-    deferred.reject(e);
+
+      deferred.resolve(res.file);
   });
 
   return deferred.promise;
