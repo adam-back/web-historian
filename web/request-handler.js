@@ -87,15 +87,11 @@ exports.handleRequest = function (req, res) {
               .then(function(bool) {
                 // if it has been archived
                 if(bool === true) {
-                console.log("yes it's been archived");
-                  // serve the archived website
-                  archive.readArchivedUrl(requestedUrl)
-                    .then(function(archivedSite) {
-                      sendResponse(res, 200, 'text/html', archivedSite);
-                    })
-                    .catch(function(error) {
-                      serverError(res, error);
-                    });
+                  console.log("yes it's been archived");
+                  // redirect to the archived site
+                  res.statusCode = 302;
+                  res.setHeader("Location",  '/' + requestedUrl );
+                  res.end();
                   // site hasn't been archived, but is added to sites.txt
                 } else {
                   // serve the loading page
