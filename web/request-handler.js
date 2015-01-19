@@ -101,6 +101,7 @@ exports.handleRequest = function (req, res) {
               })
               .catch(function(error) {
                 console.error('Error checking if URL is archived', error);
+                serverError(res, error);
               });
           // otherwise, not in sites.txt yet
           } else {
@@ -113,11 +114,13 @@ exports.handleRequest = function (req, res) {
               })
               .catch(function(error) {
                 console.error('Error adding URL to sites.txt for URL:', error);
+                serverError(res, error);
               });
           }
         })
         .catch(function(error) {
           console.error('Error checking sites.txt for URL:', error);
+          serverError(res, error);
         });
     })
   }

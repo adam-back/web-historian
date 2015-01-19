@@ -32,7 +32,7 @@ exports.readListOfUrls = function(){
   var deferred = Q.defer();
   fs.readFile(this.paths.list, 'utf-8', function(error, data) {
     if( error ) {
-      deferred.reject(error);
+      deferred.reject("Cannot read list of URLS: " + error);
     } else {
       deferred.resolve(data);
     }
@@ -60,9 +60,9 @@ exports.isUrlInList = function(target){
 
 exports.addUrlToList = function(url){
   var deferred = Q.defer();
-  url = url + '\n';
+
   // append URL and newline to sites.txt
-  fs.appendFile(this.paths.list, url, function(error) {
+  fs.appendFile(this.paths.list, url + '\n', function(error) {
     if(error) {
       deferred.reject(error);
     } else {
@@ -139,7 +139,7 @@ exports.downloadUrls = function(){
             }
           })
           .catch(function(error) {
-            console.error('Error checking if URL is archived: ', error);
+            console.error('Error checking if URL is archived: ' + error);
           });
       });
 
