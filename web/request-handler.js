@@ -6,7 +6,7 @@ var url = require('url');
 
 exports.handleRequest = function (req, res) {
   if( req.method === 'GET' ) {
-    if ( req.url === '/' ) {
+    if ( req.url === '/') {
       // serve static index.html
       httpHelpers.serveAssets('index.html')
         .then(function(asset) {
@@ -24,6 +24,8 @@ exports.handleRequest = function (req, res) {
         .catch(function(error) {
           console.error("Error serving css", error);
         });
+    } else if ( req.url === '/loading' ) {
+      serveLoadingPage(res);
     } else {
       // check if GET request is looking for archived site
       // parse the request path, then remove the leading forward-slash
@@ -96,7 +98,9 @@ exports.handleRequest = function (req, res) {
                   // site hasn't been archived, but is added to sites.txt
                 } else {
                   // serve the loading page
-                  serveLoadingPage(res);
+                  res.statusCode = 302;
+                  res.setHeader("Location", "/loading")
+                  res.end();
                 }      
               })
               .catch(function(error) {
@@ -105,18 +109,20 @@ exports.handleRequest = function (req, res) {
               });
           // otherwise, not in sites.txt yet
           } else {
-            // serve the loading page
-            serveLoadingPage(res);
             // add it to sites.txt to be archived by the next cronjob
             archive.addUrlToList(requestedUrl)
               .then(function(success) {
                 console.log('The URL has been successfully added to sites.txt', success);
+                res.statusCode = 302;
+                res.setHeader("Location", "/loading")
+                res.end();
               })
               .catch(function(error) {
                 console.error('Error adding URL to sites.txt for URL:', error);
                 serverError(res, error);
               });
           }
+            // redirect to loading page
         })
         .catch(function(error) {
           console.error('Error checking sites.txt for URL:', error);
@@ -139,9 +145,10 @@ var serverError = function(res, error) {
 var serveLoadingPage = function(res) {
   httpHelpers.serveAssets('loading.html')
     .then(function(asset) {
-      sendResponse(res, 302, 'text/html', asset);
+      sendResponse(res, 200, 'text/html', asset);
     })
     .catch(function(error) {
       console.error("Error serving loading.html:", error);
+      serverError(res, error);
     });
 };
