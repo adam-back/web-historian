@@ -14,24 +14,16 @@ console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 
 
-// var archiveJob = new CronJob('* * * * *', function() {
-//   // every minute
-//   // archive URLs
-//   htmlfetcher()
-//     .then(function(success) {
-//       console.log(success);
-//     })
-//     .catch(function(error) {
-//       console.error(error);
-//     });
-
-// })
-//   .start();
-
-htmlfetcher()
+var archiveJob = new CronJob('* * * * *', function() {
+  // every minute
+  // archive URLs
+  htmlfetcher()
     .then(function(success) {
       console.log(success);
     })
     .catch(function(error) {
       console.error(error);
     });
+
+})
+  .start();

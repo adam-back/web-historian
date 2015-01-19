@@ -134,14 +134,15 @@ exports.downloadUrls = function(){
                   numberOfDownloads++;
                 })
                 .catch(function(error) {
-                  console.error(error);
+                  console.error('Error archiving ' + error + '.');
                 });
             }
           })
           .catch(function(error) {
-            console.error('Error checking if URL is archived:', error);
+            console.error('Error checking if URL is archived: ', error);
           });
       });
+
       deferred.resolve(numberOfDownloads);
     })
     .catch(function(error) {
@@ -160,13 +161,12 @@ exports.archiveUrl = function(url) {
     progress: function (current, total) {
       console.log('downloaded %d bytes from %d', current, total);
     }}, '../archives/sites/' + url, function (err, res) {
-      if  (err) {
-        console.error(err);
-        deferred.reject(err);
+      if (err) {
+        deferred.reject(err.url);
         return;
+      } else {
+        deferred.resolve(res.file);
       }
-
-      deferred.resolve(res.file);
   });
 
   return deferred.promise;
