@@ -76,7 +76,7 @@ exports.addUrlToList = function(url){
 exports.isUrlArchived = function(target){
   var deferred = Q.defer();
 
-  // search /sites for url
+  // search sites for url
   fs.readdir(this.paths.archivedSites, function(error, files) {
     // files is an array of files in the directory
     if(error) {
@@ -84,13 +84,12 @@ exports.isUrlArchived = function(target){
     } else {
       // look to see if url is already a file, meaning it is archived
       for (var i = 0; i < files.length; i++) {
-        if(files[i] === target) {
+
+        if( files[i] === target ) {
           deferred.resolve(true);
           break;
         }
       };
-
-      // if the file is not found,
       deferred.resolve(false);
     }
   }); 

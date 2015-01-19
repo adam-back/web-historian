@@ -83,10 +83,11 @@ exports.handleRequest = function (req, res) {
           // if it has been added to sites.txt
           if( urlInList === true ) {
             // check to see if it's been archived yet
-            archive.isUrlArchived(url)
+            archive.isUrlArchived( requestedUrl )
               .then(function(bool) {
                 // if it has been archived
                 if(bool === true) {
+                console.log("yes it's been archived");
                   // serve the archived website
                   archive.readArchivedUrl(requestedUrl)
                     .then(function(archivedSite) {
