@@ -8,34 +8,41 @@ exports.fetch = function() {
   var deferred = Q.defer();
 
   archiveHelpers.downloadUrls()
-    .then(function(numberOfDownloads) {
-      var date = new Date();
-      var logMessage = date + ": " + numberOfDownloads + " downloads" + "\n";
-      // log that download occurred
-      fs.appendFile('cronlog.txt', logMessage, function(writeError) {
-        if(writeError) {
-          console.error('Error writing to cronlog: ', writeError);
-        } else {
-          console.log('Check cronlog.txt for a summary of downloads.');
-        }
-      });
-    
-      deferred.resolve(logMessage);
+    .then(function() {
+      writeToCronlog('ran cronjob.')
+        .then(function(message) {
+          deferred.resolve(message);
+        })
+        .catch(function(error) {
+          deferred.resolve('Successfully ran cronjob, but error writing to cronlog.txt: ', error);
+        });
     })
     .catch(function(error) {
-      var date = new Date();
-      var logMessage = date + ": " + error + "\n";
-      fs.appendFile('cronlog.txt', logMessage, function(writeError) {
-        if( writeError ) {
-          console.error('Error writing to cronlog: ', writeError);
-        } else {
-          console.log('Error downloading ALL URLs. Check cronlog.txt.');
-        }
-      });
-
-      deferred.reject(error);
+      writeToCronlog(error)
+        .then(function(message) {
+          deferred.reject(message);
+        })
+        .catch(function(error) {
+          deferred.reject('Unsuccessfully ran cronjob AND error writing to cronlog.txt: ', error);
+        })
     });
   
   return deferred.promise;
 }
 
+var writeToCronlog = function(message) {
+  var deferred = Q.defer();
+
+  var date = new Date();
+  message = date.toString() + ': ' + message + '\n';
+
+  fs.appendFile('cronlog.txt', message, function(writeError) {
+    if( writeError ) {
+      deferred.reject(writeError);
+    } else {
+      deferred.resolve(message);
+    }
+  });
+
+  return deferred.promise;
+};
