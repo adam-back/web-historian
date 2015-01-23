@@ -26,10 +26,10 @@ exports.fetch = function() {
       var date = new Date();
       var logMessage = date + ": " + error + "\n";
       fs.appendFile('cronlog.txt', logMessage, function(writeError) {
-        if(writeError) {
+        if( writeError ) {
           console.error('Error writing to cronlog: ', writeError);
         } else {
-          console.log('Error downloading ALL Urls. Check conlog.txt.');
+          console.log('Error downloading ALL URLs. Check cronlog.txt.');
         }
       });
 

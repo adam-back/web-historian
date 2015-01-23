@@ -19,24 +19,24 @@ exports.paths = {
 };
 
 // Used for stubbing paths for jasmine tests, do not modify
+// Modified to my own suiting :-)
 exports.initialize = function(pathsObj){
   _.each(pathsObj, function(path, type) {
     exports.paths[type] = path;
   });
 };
 
-// The following function names are provided to you to suggest how you might
-// modularize your code. Keep it clean!
-
 exports.readListOfUrls = function(){
   var deferred = Q.defer();
+
   fs.readFile(this.paths.list, 'utf-8', function(error, data) {
     if( error ) {
-      deferred.reject("Cannot read list of URLS: " + error);
+      deferred.reject(error);
     } else {
       deferred.resolve(data);
     }
   });
+
   return deferred.promise;
 };
 
@@ -45,6 +45,7 @@ exports.isUrlInList = function(target){
   
   this.readListOfUrls()
     .then(function(list) {
+      // if the target Url can be found
       if( list.search(target) !== -1 ) {
         deferred.resolve(true);
       } else {
@@ -61,9 +62,9 @@ exports.isUrlInList = function(target){
 exports.addUrlToList = function(url){
   var deferred = Q.defer();
 
-  // append URL and newline to sites.txt
+  // Append URL and newline to sites.txt
   fs.appendFile(this.paths.list, url + '\n', function(error) {
-    if(error) {
+    if( error ) {
       deferred.reject(error);
     } else {
       deferred.resolve('Successfully added URL to list.');
@@ -76,10 +77,10 @@ exports.addUrlToList = function(url){
 exports.isUrlArchived = function(target){
   var deferred = Q.defer();
 
-  // search sites for url
+  // search /sites for URL
   fs.readdir(this.paths.archivedSites, function(error, files) {
     // files is an array of files in the directory
-    if(error) {
+    if( error ) {
       deferred.reject(error);
     } else {
       // look to see if url is already a file, meaning it is archived
@@ -98,10 +99,11 @@ exports.isUrlArchived = function(target){
 };
 
 exports.readArchivedUrl = function(target){
+  // Read the archived Url then give the data for serving
   var deferred = Q.defer();
 
   fs.readFile(this.paths.archivedSites + '/' + target, 'utf-8', function(error, data) {
-    if(error) {
+    if( error ) {
       deferred.reject(error);
     } else {
       deferred.resolve(data);
@@ -113,19 +115,22 @@ exports.readArchivedUrl = function(target){
 
 exports.downloadUrls = function(){
   var deferred = Q.defer();
+
   var numberOfDownloads = 0;
   // read list of urls
   this.readListOfUrls()
     .then(function(data) {
       // create an array of the urls
       var urls = data.split('\n');
+      // get rid of empty newline character
+      urls.pop();
       // loop through list
       urls.forEach(function(url) {
         // check if url is archived
         exports.isUrlArchived(url)
-          .then(function(bool) {
+          .then(function(urlHasBeenArchived) {
             // if it isn't yet
-            if(bool === false) {
+            if( urlHasBeenArchived === false ) {
               // archive it
               exports.archiveUrl(url)
                 .then(function(success) {
@@ -141,7 +146,8 @@ exports.downloadUrls = function(){
             console.error('Error checking if URL is archived: ' + error);
           });
       });
-
+    })
+    .then(function() {
       deferred.resolve(numberOfDownloads);
     })
     .catch(function(error) {
@@ -153,18 +159,34 @@ exports.downloadUrls = function(){
 
 exports.archiveUrl = function(url) {
   var deferred = Q.defer();
+  var unmodifiedURL = url;
 
-  // save the response to file with a progress callback
+  // First try index.html
   http.get({
-    url: url + '/index.html',
+    url: unmodifiedURL + '/index.html',
     progress: function (current, total) {
       console.log('downloaded %d bytes from %d', current, total);
-    }}, '../archives/sites/' + url, function (err, res) {
-      if (err) {
-        deferred.reject(err.url);
-        return;
-      } else {
+    }}, '../archives/sites/' + unmodifiedURL, function (err, res) {
+      
+      // Found index.html
+      if( res ) {
         deferred.resolve(res.file);
+
+      // Secondly try just the root
+      } else if( err ) {
+        http.get({
+          url: unmodifiedURL + '/',
+          progress: function (current, total) {
+            console.log('downloaded %d bytes from %d', current, total);
+          }}, '../archives/sites/' + unmodifiedURL, function (err, res) {
+          // Also not found
+          if( err ) {
+            // All hope is lost
+            deferred.reject(unmodifiedURL);
+          } else {
+            deferred.resolve(res.file);
+          }
+        });
       }
   });
 
