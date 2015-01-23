@@ -116,7 +116,6 @@ exports.readArchivedUrl = function(target){
 exports.downloadUrls = function(){
   var deferred = Q.defer();
 
-  var numberOfDownloads = 0;
   // read list of urls
   this.readListOfUrls()
     .then(function(data) {
@@ -135,7 +134,6 @@ exports.downloadUrls = function(){
               exports.archiveUrl(url)
                 .then(function(success) {
                   console.log('Successfully archived ' + url + '!');
-                  numberOfDownloads++;
                 })
                 .catch(function(error) {
                   console.error('Error archiving ' + error + '.');
@@ -146,9 +144,8 @@ exports.downloadUrls = function(){
             console.error('Error checking if URL is archived: ' + error);
           });
       });
-    })
-    .then(function() {
-      deferred.resolve(numberOfDownloads);
+
+      deferred.resolve();
     })
     .catch(function(error) {
       deferred.reject(error);
