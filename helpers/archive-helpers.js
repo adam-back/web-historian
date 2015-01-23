@@ -164,23 +164,24 @@ exports.archiveUrl = function(url) {
   // First try index.html
   http.get({
     url: unmodifiedURL + '/index.html',
-    progress: function (current, total) {
+    progress: function(current, total) {
       console.log('downloaded %d bytes from %d', current, total);
-    }}, '../archives/sites/' + unmodifiedURL, function (err, res) {
-      
+    }}, './archives/sites/' + unmodifiedURL, function(error, res) {
+
       // Found index.html
       if( res ) {
         deferred.resolve(res.file);
-
       // Secondly try just the root
-      } else if( err ) {
+      } else if( error ) {
+
         http.get({
           url: unmodifiedURL + '/',
-          progress: function (current, total) {
+          progress: function(current, total) {
             console.log('downloaded %d bytes from %d', current, total);
-          }}, '../archives/sites/' + unmodifiedURL, function (err, res) {
+          }}, './archives/sites/' + unmodifiedURL, function(error, res) {
+
           // Also not found
-          if( err ) {
+          if( error ) {
             // All hope is lost
             deferred.reject(unmodifiedURL);
           } else {
