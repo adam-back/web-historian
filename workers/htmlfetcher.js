@@ -16,7 +16,7 @@ exports.fetch = function() {
         if(writeError) {
           console.error('Error writing to cronlog: ', writeError);
         } else {
-          console.log('Successfully downloaded URLs. Check cronlog.txt for a summary.');
+          console.log('Check cronlog.txt for a summary of downloads.');
         }
       });
     
@@ -28,6 +28,8 @@ exports.fetch = function() {
       fs.appendFile('cronlog.txt', logMessage, function(writeError) {
         if(writeError) {
           console.error('Error writing to cronlog: ', writeError);
+        } else {
+          console.log('Error downloading ALL Urls. Check conlog.txt.');
         }
       });
 

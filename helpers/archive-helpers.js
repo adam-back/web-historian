@@ -66,7 +66,7 @@ exports.addUrlToList = function(url){
     if(error) {
       deferred.reject(error);
     } else {
-      deferred.resolve('Successfully added URL to list');
+      deferred.resolve('Successfully added URL to list.');
     }
   })
 
