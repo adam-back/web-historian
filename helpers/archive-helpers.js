@@ -111,7 +111,6 @@ exports.readArchivedUrl = function(target){
   });
 
   return deferred.promise;
-};
 
 exports.downloadUrls = function(){
   var deferred = Q.defer();
